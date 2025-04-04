@@ -13,3 +13,80 @@ body {
   min-width: 320px;
   min-height: 100vh;
 }
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-brand-cream dark:bg-brand-dark;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-brand-orange/50 dark:bg-brand-teal/50 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-brand-orange dark:bg-brand-teal;
+}
+
+/* Global transitions */
+* {
+  @apply transition-all duration-200;
+}
+
+/* Clerk sign-in customization */
+.cl-card {
+  @apply !bg-transparent;
+}
+
+.cl-headerTitle {
+  @apply !bg-gradient-to-r !from-brand-orange !via-brand-yellow !to-brand-teal !bg-clip-text !text-transparent;
+}
+
+.cl-headerSubtitle {
+  @apply !text-gray-600 dark:!text-gray-400;
+}
+
+.cl-footerAction {
+  @apply !text-gray-600 dark:!text-gray-400;
+}
+
+.cl-footerActionLink {
+  @apply !text-brand-teal dark:!text-brand-yellow hover:!text-brand-orange dark:hover:!text-brand-orange;
+}
+
+.cl-socialButtonsBlockButton {
+  @apply !bg-white dark:!bg-gray-700 !text-gray-900 dark:!text-white border dark:border-gray-600 
+         hover:!bg-brand-cream dark:hover:!bg-brand-dark hover:!border-brand-teal dark:hover:!border-brand-yellow;
+}
+
+.cl-formFieldInput {
+  @apply dark:!bg-gray-700 dark:!text-white dark:!border-gray-600
+         focus:!border-brand-teal dark:focus:!border-brand-yellow !transition-all;
+}
+
+.cl-formFieldLabel {
+  @apply dark:!text-gray-300;
+}
+
+.cl-formButtonPrimary {
+  @apply !bg-brand-teal hover:!bg-brand-orange dark:!bg-brand-teal dark:hover:!bg-brand-orange
+         transform transition-all duration-300 hover:scale-105;
+}
+
+/* Custom animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}

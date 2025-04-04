@@ -85,8 +85,8 @@ export default function RecipeGenerator() {
 
   return (
     <div className="space-y-8">
-      <div className="bg-white shadow sm:rounded-lg p-6">
-        <h2 className="text-lg font-medium mb-4">Add Ingredients</h2>
+      <div className="bg-white dark:bg-gray-800 shadow sm:rounded-lg p-6 transition-colors">
+        <h2 className="text-lg font-medium mb-4 text-gray-900 dark:text-white">Add Ingredients</h2>
         <div className="flex gap-2 mb-4">
           <input
             type="text"
@@ -94,11 +94,11 @@ export default function RecipeGenerator() {
             onChange={(e) => setNewIngredient(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && addIngredient()}
             placeholder="Enter an ingredient"
-            className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            className="flex-1 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400 transition-colors"
           />
           <button
             onClick={addIngredient}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+            className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 transition-colors"
           >
             Add
           </button>
@@ -108,12 +108,12 @@ export default function RecipeGenerator() {
           {ingredients.map((ingredient, index) => (
             <span
               key={index}
-              className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800"
+              className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200 transition-colors"
             >
               {ingredient}
               <button
                 onClick={() => removeIngredient(index)}
-                className="ml-2 text-indigo-600 hover:text-indigo-900"
+                className="ml-2 text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-200"
               >
                 ×
               </button>
@@ -123,7 +123,7 @@ export default function RecipeGenerator() {
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Dietary Restrictions
             </label>
             <select
@@ -133,7 +133,7 @@ export default function RecipeGenerator() {
                 ...preferences,
                 restrictions: Array.from(e.target.selectedOptions, option => option.value)
               })}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400 transition-colors"
             >
               <option value="vegetarian">Vegetarian</option>
               <option value="vegan">Vegan</option>
@@ -143,7 +143,7 @@ export default function RecipeGenerator() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Cuisine Preference
             </label>
             <select
@@ -152,7 +152,7 @@ export default function RecipeGenerator() {
                 ...preferences,
                 cuisine: e.target.value
               })}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400 transition-colors"
             >
               <option value="any">Any</option>
               <option value="italian">Italian</option>
@@ -166,25 +166,25 @@ export default function RecipeGenerator() {
         <button
           onClick={generateRecipe}
           disabled={loading || ingredients.length === 0}
-          className="mt-4 w-full px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:bg-gray-400"
+          className="mt-4 w-full px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:bg-gray-400 dark:bg-indigo-500 dark:hover:bg-indigo-600 dark:disabled:bg-gray-600 transition-colors"
         >
           {loading ? 'Generating...' : 'Generate Recipe'}
         </button>
 
         {error && (
-          <div className="mt-4 p-4 bg-red-50 text-red-700 rounded-md">
+          <div className="mt-4 p-4 bg-red-50 text-red-700 dark:bg-red-900/50 dark:text-red-200 rounded-md transition-colors">
             {error}
           </div>
         )}
       </div>
 
       {recipe && (
-        <div className="bg-white shadow sm:rounded-lg p-6">
-          <h2 className="text-2xl font-bold mb-4">{recipe.name}</h2>
+        <div className="bg-white dark:bg-gray-800 shadow sm:rounded-lg p-6 transition-colors">
+          <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">{recipe.name}</h2>
           
           <div className="mb-6">
-            <h3 className="text-lg font-medium mb-2">Ingredients</h3>
-            <ul className="list-disc list-inside space-y-1">
+            <h3 className="text-lg font-medium mb-2 text-gray-900 dark:text-white">Ingredients</h3>
+            <ul className="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-300">
               {recipe.ingredients.map((ingredient, index) => (
                 <li key={index}>{ingredient}</li>
               ))}
@@ -192,8 +192,8 @@ export default function RecipeGenerator() {
           </div>
 
           <div className="mb-6">
-            <h3 className="text-lg font-medium mb-2">Instructions</h3>
-            <ol className="list-decimal list-inside space-y-2">
+            <h3 className="text-lg font-medium mb-2 text-gray-900 dark:text-white">Instructions</h3>
+            <ol className="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300">
               {recipe.instructions.map((step, index) => (
                 <li key={index}>{step}</li>
               ))}
@@ -201,24 +201,16 @@ export default function RecipeGenerator() {
           </div>
 
           <div>
-            <h3 className="text-lg font-medium mb-2">Nutrition Estimate</h3>
+            <h3 className="text-lg font-medium mb-2 text-gray-900 dark:text-white">Nutrition Estimate</h3>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-              <div className="bg-gray-50 p-3 rounded-md">
-                <div className="text-sm text-gray-500">Calories</div>
-                <div className="font-medium">{recipe.nutritionEstimate.calories}</div>
-              </div>
-              <div className="bg-gray-50 p-3 rounded-md">
-                <div className="text-sm text-gray-500">Protein</div>
-                <div className="font-medium">{recipe.nutritionEstimate.protein}</div>
-              </div>
-              <div className="bg-gray-50 p-3 rounded-md">
-                <div className="text-sm text-gray-500">Carbs</div>
-                <div className="font-medium">{recipe.nutritionEstimate.carbs}</div>
-              </div>
-              <div className="bg-gray-50 p-3 rounded-md">
-                <div className="text-sm text-gray-500">Fat</div>
-                <div className="font-medium">{recipe.nutritionEstimate.fat}</div>
-              </div>
+              {['calories', 'protein', 'carbs', 'fat'].map((nutrient) => (
+                <div key={nutrient} className="bg-gray-50 dark:bg-gray-700 p-3 rounded-md transition-colors">
+                  <div className="text-sm text-gray-500 dark:text-gray-400 capitalize">{nutrient}</div>
+                  <div className="font-medium text-gray-900 dark:text-white">
+                    {recipe.nutritionEstimate[nutrient]}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
