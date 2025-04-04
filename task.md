@@ -51,3 +51,7 @@ Goal: Secure all API keys and configurations.
  Load variables using dotenv.
 
  Validate keys on startup and handle missing configs gracefully.
+
+
+
+ 
