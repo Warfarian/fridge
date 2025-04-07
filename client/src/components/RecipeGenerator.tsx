@@ -27,26 +27,31 @@ interface ProcessedIngredient {
   };
 }
 
+// Parse ingredients from raw_output
 const parseIngredients = (rawOutput: string): string[] => {
   console.log('Raw output to parse:', rawOutput);
   const ingredientSet = new Set<string>();
   
-  const regex = /(?:\d+\.\s*|\-\s*)([^.]*?)(?=\d+\.|$)/g;
-  const matches = rawOutput.matchAll(regex);
+  // Split by newlines and process each line
+  const lines = rawOutput.split('\n');
   
-  for (const match of matches) {
-    let ingredient = match[1]
-      .replace(/\*\*/g, '') // Remove bold markers
-      .replace(/sliced/gi, '') // Remove 'sliced' since it's a prep method
-      .replace(/\(.*?\)/g, '') // Remove parentheses content
+  lines.forEach(line => {
+    // Extract ingredient name, removing quantities and prep instructions
+    let ingredient = line
+      .replace(/^[^a-zA-Z]+/, '') // Remove leading non-letter characters
+      .split('-')[0] // Take only the part before any dash
+      .split('(')[0] // Remove parenthetical notes
+      .replace(/\d+(\.\d+)?(\s*\/\s*\d+)?/g, '') // Remove numbers and fractions
+      .replace(/around|about|approximately/gi, '') // Remove approximation words
+      .replace(/bunch(es)?|container[s]?|head[s]?/gi, '') // Remove container words
       .trim()
       .toLowerCase();
     
     console.log('Extracted ingredient:', ingredient);
-    if (ingredient) {
+    if (ingredient && !ingredient.includes('here') && ingredient !== 'list') {
       ingredientSet.add(ingredient);
     }
-  }
+  });
 
   const result = Array.from(ingredientSet);
   console.log('Final parsed ingredients:', result);
