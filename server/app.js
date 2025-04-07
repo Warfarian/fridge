@@ -48,6 +48,7 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use('/output', express.static('output')); // Serve the output directory
 
 // Nutritionix API configuration
 const NUTRITIONIX_API_URL = 'https://trackapi.nutritionix.com/v2';
