@@ -29,6 +29,7 @@ interface ProcessedIngredient {
 
 // Parse ingredients from raw_output
 const parseIngredients = (rawOutput: string): string[] => {
+  console.log('Raw output to parse:', rawOutput); // Debug log
   // Split by newlines and find the list section
   const lines = rawOutput.split('\n');
   const ingredientSet = new Set<string>();
@@ -36,31 +37,31 @@ const parseIngredients = (rawOutput: string): string[] => {
   lines.forEach(line => {
     if (line.includes('-')) {
       // Extract ingredient name and remove quantity
-      const ingredient = line.split('-')[0]
-        .replace(/\d+\./, '') // Remove list numbers
-        .replace(/\(.*?\)/, '') // Remove parentheses content
+      const ingredient = line.split('-')[1] // Changed from [0] to [1] since ingredients are after the dash
+        .replace(/\d+/g, '') // Remove all numbers
+        .replace(/\(.*?\)/g, '') // Remove parentheses content
+        .replace(/steamed/gi, '') // Remove 'steamed' since it's a cooking method
         .trim()
         .toLowerCase(); // Normalize case
       
+      console.log('Extracted ingredient:', ingredient); // Debug log
       if (ingredient) {
         ingredientSet.add(ingredient);
       }
     }
   });
 
-  return Array.from(ingredientSet);
+  const result = Array.from(ingredientSet);
+  console.log('Final parsed ingredients:', result); // Debug log
+  return result;
 };
 
 export default function RecipeGenerator() {
-  const [ingredients, setIngredients] = useState<string[]>([]);
+  const [detectedIngredients, setDetectedIngredients] = useState<string[]>([]);
   const [newIngredient, setNewIngredient] = useState('');
   const [loading, setLoading] = useState(false);
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [processedIngredients, setProcessedIngredients] = useState<ProcessedIngredient[]>([]);
-  const [progress, setProgress] = useState(0);
-  const [statusMessage, setStatusMessage] = useState('');
-  const [requestId, setRequestId] = useState('');
   const [preferences, setPreferences] = useState<Preferences>({
     restrictions: [],
     cuisine: 'any'
@@ -72,8 +73,19 @@ export default function RecipeGenerator() {
       try {
         const response = await fetch('http://localhost:3000/output/qwen_output.json');
         const data = await response.json();
-        const newIngredients = parseIngredients(data.raw_output);
-        setIngredients(newIngredients);
+        console.log('Fetched data:', data); // Debug log
+        if (data && data.raw_output) {
+          const newIngredients = parseIngredients(data.raw_output);
+          console.log('Parsed ingredients:', newIngredients); // Debug log
+          setDetectedIngredients(prev => {
+            // Only update if we have new ingredients that are different
+            const currentSet = new Set(prev);
+            const newSet = new Set(newIngredients);
+            const areEqual = currentSet.size === newSet.size && 
+              [...currentSet].every(value => newSet.has(value));
+            return areEqual ? prev : newIngredients;
+          });
+        }
       } catch (err) {
         console.error('Failed to load ingredients:', err);
       }
@@ -87,36 +99,25 @@ export default function RecipeGenerator() {
     return () => clearInterval(interval);
   }, []);
 
-  // Create allIngredients after processedIngredients has been defined
-  const allIngredients = [...new Set([...ingredients, ...processedIngredients.map(item => item.name)])];
-
   const addIngredient = () => {
     if (newIngredient.trim()) {
-      // Update processed ingredients with the new one
-      setProcessedIngredients(prev => [...prev, { name: newIngredient.trim() }]);
+      setDetectedIngredients(prev => [...prev, newIngredient.trim()]);
       setNewIngredient('');
     }
   };
 
-  const removeIngredient = (ingredient: string) => {
-    setProcessedIngredients(prev => prev.filter(item => item.name !== ingredient));
+  const removeIngredient = (index: number) => {
+    setDetectedIngredients(prev => prev.filter((_, i) => i !== index));
   };
 
   const generateRecipe = async () => {
-    if (allIngredients.length === 0) {
+    if (detectedIngredients.length === 0) {
       setError('Please add at least one ingredient');
       return;
     }
 
     setLoading(true);
     setError(null);
-    setProgress(0);
-    setStatusMessage('Starting recipe generation...');
-    setProcessedIngredients([]);
-    
-    // Generate a new request ID
-    const newRequestId = Date.now().toString();
-    setRequestId(newRequestId);
 
     try {
       const response = await fetch('http://localhost:3000/api/generate-recipes', {
@@ -125,7 +126,7 @@ export default function RecipeGenerator() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          items: allIngredients,
+          items: detectedIngredients,
           preferences
         }),
       });
@@ -134,9 +135,11 @@ export default function RecipeGenerator() {
         throw new Error('Failed to generate recipe');
       }
 
-      // Note: We don't need to set the recipe here as it will come through the socket
+      const data = await response.json();
+      setRecipe(data.data.recipe);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
       setLoading(false);
     }
   };
@@ -152,14 +155,14 @@ export default function RecipeGenerator() {
       <div className="bg-white dark:bg-gray-800 shadow sm:rounded-lg p-6 transition-colors">
         <h2 className="text-lg font-medium mb-4 text-gray-900 dark:text-white">Detected Ingredients</h2>
         <div className="flex flex-wrap gap-2 mb-6">
-          {allIngredients.map((ingredient) => (
+          {detectedIngredients.map((ingredient, index) => (
             <span
-              key={ingredient}
+              key={index}
               className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200 transition-colors"
             >
               {ingredient}
               <button
-                onClick={() => removeIngredient(ingredient)}
+                onClick={() => removeIngredient(index)}
                 className="ml-2 text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-200"
               >
                 ×
@@ -231,7 +234,7 @@ export default function RecipeGenerator() {
 
           <button
             onClick={generateRecipe}
-            disabled={loading || allIngredients.length === 0}
+            disabled={loading || detectedIngredients.length === 0}
             className="mt-4 w-full px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:bg-gray-400 dark:bg-indigo-500 dark:hover:bg-indigo-600 dark:disabled:bg-gray-600 transition-colors"
           >
             {loading ? 'Generating...' : 'Generate Recipe'}
