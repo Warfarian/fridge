@@ -27,32 +27,29 @@ interface ProcessedIngredient {
   };
 }
 
-// Parse ingredients from raw_output
 const parseIngredients = (rawOutput: string): string[] => {
-  console.log('Raw output to parse:', rawOutput); // Debug log
-  // Split by newlines and find the list section
-  const lines = rawOutput.split('\n');
+  console.log('Raw output to parse:', rawOutput);
   const ingredientSet = new Set<string>();
   
-  lines.forEach(line => {
-    if (line.includes('-')) {
-      // Extract ingredient name and remove quantity
-      const ingredient = line.split('-')[1] // Changed from [0] to [1] since ingredients are after the dash
-        .replace(/\d+/g, '') // Remove all numbers
-        .replace(/\(.*?\)/g, '') // Remove parentheses content
-        .replace(/steamed/gi, '') // Remove 'steamed' since it's a cooking method
-        .trim()
-        .toLowerCase(); // Normalize case
-      
-      console.log('Extracted ingredient:', ingredient); // Debug log
-      if (ingredient) {
-        ingredientSet.add(ingredient);
-      }
+  const regex = /(?:\d+\.\s*|\-\s*)([^.]*?)(?=\d+\.|$)/g;
+  const matches = rawOutput.matchAll(regex);
+  
+  for (const match of matches) {
+    let ingredient = match[1]
+      .replace(/\*\*/g, '') // Remove bold markers
+      .replace(/sliced/gi, '') // Remove 'sliced' since it's a prep method
+      .replace(/\(.*?\)/g, '') // Remove parentheses content
+      .trim()
+      .toLowerCase();
+    
+    console.log('Extracted ingredient:', ingredient);
+    if (ingredient) {
+      ingredientSet.add(ingredient);
     }
-  });
+  }
 
   const result = Array.from(ingredientSet);
-  console.log('Final parsed ingredients:', result); // Debug log
+  console.log('Final parsed ingredients:', result);
   return result;
 };
 
@@ -68,17 +65,15 @@ export default function RecipeGenerator() {
   });
 
   useEffect(() => {
-    // Initial load and setup polling
     const loadIngredients = async () => {
       try {
         const response = await fetch('http://localhost:3000/output/qwen_output.json');
         const data = await response.json();
-        console.log('Fetched data:', data); // Debug log
+        console.log('Fetched data:', data);
         if (data && data.raw_output) {
           const newIngredients = parseIngredients(data.raw_output);
-          console.log('Parsed ingredients:', newIngredients); // Debug log
+          console.log('Parsed ingredients:', newIngredients);
           setDetectedIngredients(prev => {
-            // Only update if we have new ingredients that are different
             const currentSet = new Set(prev);
             const newSet = new Set(newIngredients);
             const areEqual = currentSet.size === newSet.size && 
@@ -91,11 +86,9 @@ export default function RecipeGenerator() {
       }
     };
 
-    // Load immediately
     loadIngredients();
 
-    // Then poll every 2 seconds
-    const interval = setInterval(loadIngredients, 2000);
+    const interval = setInterval(loadIngredients, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -250,55 +243,10 @@ export default function RecipeGenerator() {
 
       {loading && (
         <div className="bg-white dark:bg-gray-800 shadow sm:rounded-lg p-6 transition-colors">
-          <h2 className="text-lg font-medium mb-4 text-gray-900 dark:text-white">Recipe Generation Progress</h2>
-          <div className="mb-4">
-            <div className="mb-2 flex justify-between">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{statusMessage}</span>
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{progress}%</span>
-            </div>
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
-              <div 
-                className="bg-indigo-600 dark:bg-indigo-500 h-2.5 rounded-full" 
-                style={{ width: `${progress}%` }}
-              ></div>
-            </div>
+          <h2 className="text-lg font-medium mb-4 text-gray-900 dark:text-white">Generating Recipe...</h2>
+          <div className="flex items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 dark:border-indigo-400"></div>
           </div>
-
-          {processedIngredients.length > 0 && (
-            <div>
-              <h3 className="text-md font-medium mb-2 text-gray-900 dark:text-white">Processed Ingredients</h3>
-              <div className="space-y-2">
-                {processedIngredients.map((ingredient, index) => (
-                  <div 
-                    key={index} 
-                    className="p-3 bg-gray-50 dark:bg-gray-700 rounded-md transition-colors"
-                  >
-                    <h4 className="font-medium text-gray-900 dark:text-white">{ingredient.name}</h4>
-                    {ingredient.nutritionData && (
-                      <div className="mt-1 text-sm grid grid-cols-4 gap-2">
-                        <div>
-                          <span className="text-gray-500 dark:text-gray-400">Calories:</span>{" "}
-                          <span className="text-gray-900 dark:text-white">{ingredient.nutritionData.calories}</span>
-                        </div>
-                        <div>
-                          <span className="text-gray-500 dark:text-gray-400">Protein:</span>{" "}
-                          <span className="text-gray-900 dark:text-white">{ingredient.nutritionData.protein}g</span>
-                        </div>
-                        <div>
-                          <span className="text-gray-500 dark:text-gray-400">Carbs:</span>{" "}
-                          <span className="text-gray-900 dark:text-white">{ingredient.nutritionData.carbs}g</span>
-                        </div>
-                        <div>
-                          <span className="text-gray-500 dark:text-gray-400">Fat:</span>{" "}
-                          <span className="text-gray-900 dark:text-white">{ingredient.nutritionData.fat}g</span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       )}
 
