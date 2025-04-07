@@ -5,11 +5,24 @@ import rawData from '../../../output/qwen_output.json';
 const parseIngredients = (rawOutput: string): string[] => {
   // Split by newlines and find the list section
   const lines = rawOutput.split('\n');
-  const ingredients = lines
-    .filter(line => line.includes('-')) // Get lines with quantities
-    .map(line => line.split('-')[0].trim()) // Get just the ingredient name
-    .filter(Boolean); // Remove empty strings
-  return ingredients;
+  const ingredientSet = new Set<string>();
+  
+  lines.forEach(line => {
+    if (line.includes('-')) {
+      // Extract ingredient name and remove quantity
+      const ingredient = line.split('-')[0]
+        .replace(/\d+\./, '') // Remove list numbers
+        .replace(/\(.*?\)/, '') // Remove parentheses content
+        .trim()
+        .toLowerCase(); // Normalize case
+      
+      if (ingredient) {
+        ingredientSet.add(ingredient);
+      }
+    }
+  });
+
+  return Array.from(ingredientSet);
 };
 
 const detectedIngredients = parseIngredients(rawData.raw_output);
