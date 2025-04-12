@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
 const OpenAI = require('openai');
+const { exec } = require('child_process');
 
 // Configuration validation
 const requiredEnvVars = {

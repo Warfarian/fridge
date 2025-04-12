@@ -1,7 +1,7 @@
 import RecipeGenerator from "./components/RecipeGenerator";
 import ThemeSwitch from "./components/ThemeSwitch";
 import LandingPage from "./components/LandingPage";
-import { useEffect } from "react";
+import CheckNowButton from "./components/CheckNowButton";
 
 function App() {
   return (
@@ -15,6 +15,7 @@ function App() {
             </h1>
           </div>
           <div className="flex items-center space-x-4">
+            <CheckNowButton />
             <ThemeSwitch />
           </div>
         </div>
