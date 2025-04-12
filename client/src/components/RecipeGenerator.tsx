@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useIngredients } from '../context/IngredientsContext';
 
 interface Recipe {
   name: string;
@@ -69,32 +70,26 @@ export default function RecipeGenerator() {
     cuisine: 'any'
   });
 
-  useEffect(() => {
-    const loadIngredients = async () => {
-      try {
-        const response = await fetch('http://localhost:3000/output/qwen_output.json');
-        const data = await response.json();
-        console.log('Fetched data:', data);
-        if (data && data.raw_output) {
-          const newIngredients = parseIngredients(data.raw_output);
+  const loadIngredients = async () => {
+    try {
+      const response = await fetch('http://192.168.1.8:5000/get_json');
+      const data = await response.json();
+      console.log('Fetched data from Pi:', data);
+      if (data && data.json_data) {
+        const parsedData = JSON.parse(data.json_data);
+        if (parsedData.raw_output) {
+          const newIngredients = parseIngredients(parsedData.raw_output);
           console.log('Parsed ingredients:', newIngredients);
-          setDetectedIngredients(prev => {
-            const currentSet = new Set(prev);
-            const newSet = new Set(newIngredients);
-            const areEqual = currentSet.size === newSet.size && 
-              [...currentSet].every(value => newSet.has(value));
-            return areEqual ? prev : newIngredients;
-          });
+          setDetectedIngredients(newIngredients); // Always update with new ingredients
         }
-      } catch (err) {
-        console.error('Failed to load ingredients:', err);
       }
-    };
+    } catch (err) {
+      console.error('Failed to load ingredients:', err);
+    }
+  };
 
+  useEffect(() => {
     loadIngredients();
-
-    const interval = setInterval(loadIngredients, 30000);
-    return () => clearInterval(interval);
   }, []);
 
   const addIngredient = () => {
