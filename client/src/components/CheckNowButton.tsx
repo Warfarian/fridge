@@ -11,7 +11,7 @@ export default function CheckNowButton() {
     setMessage('');
     try {
       // First, trigger the camera capture and upload
-      const runResponse = await fetch('http://192.168.1.8:5000/run');
+      const runResponse = await fetch('http://192.168.235.194:5000/run');
       if (!runResponse.ok) {
         throw new Error('Failed to check fridge');
       }
@@ -19,7 +19,7 @@ export default function CheckNowButton() {
       console.log('Pi Camera Response:', runResult);
       
       // Then fetch the JSON data
-      const jsonResponse = await fetch('http://192.168.1.8:5000/get_json');
+      const jsonResponse = await fetch('http://192.168.235.194:5000/get_json');
       if (!jsonResponse.ok) {
         throw new Error('Failed to get ingredients');
       }

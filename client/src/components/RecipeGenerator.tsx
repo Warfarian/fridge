@@ -37,6 +37,16 @@ const parseIngredients = (rawOutput: string): string[] => {
   const lines = rawOutput.split('\n');
   
   lines.forEach(line => {
+    // Skip lines that look like image descriptions
+    if (line.toLowerCase().includes('the image shows') || 
+        line.toLowerCase().includes('i dont want this') ||
+        line.toLowerCase().includes('the image appears') ||
+        line.toLowerCase().includes('the image showcases') ||
+        line.toLowerCase().includes('item') ||
+        line.toLowerCase().includes('appears to be')) {
+      return;
+    }
+
     // Extract ingredient name, removing quantities and prep instructions
     let ingredient = line
       .replace(/^[^a-zA-Z]+/, '') // Remove leading non-letter characters
@@ -65,6 +75,7 @@ export default function RecipeGenerator() {
   const [loading, setLoading] = useState(false);
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { refreshIngredients } = useIngredients();
   const [preferences, setPreferences] = useState<Preferences>({
     restrictions: [],
     cuisine: 'any'
@@ -72,7 +83,7 @@ export default function RecipeGenerator() {
 
   const loadIngredients = async () => {
     try {
-      const response = await fetch('http://192.168.1.8:5000/get_json');
+      const response = await fetch('http://192.168.235.194:5000/get_json');
       const data = await response.json();
       console.log('Fetched data from Pi:', data);
       if (data && data.json_data) {
@@ -80,7 +91,12 @@ export default function RecipeGenerator() {
         if (parsedData.raw_output) {
           const newIngredients = parseIngredients(parsedData.raw_output);
           console.log('Parsed ingredients:', newIngredients);
-          setDetectedIngredients(newIngredients); // Always update with new ingredients
+          setDetectedIngredients(prev => {
+            // Merge new ingredients with existing ones
+            const combined = [...new Set([...prev, ...newIngredients])];
+            console.log('Updated ingredients list:', combined);
+            return combined;
+          });
         }
       }
     } catch (err) {
@@ -88,9 +104,21 @@ export default function RecipeGenerator() {
     }
   };
 
+  // Initial load
   useEffect(() => {
     loadIngredients();
   }, []);
+
+  // Set up polling every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(loadIngredients, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Listen for refresh triggers from CheckNowButton
+  useEffect(() => {
+    loadIngredients();
+  }, [refreshIngredients]);
 
   const addIngredient = () => {
     if (newIngredient.trim()) {
