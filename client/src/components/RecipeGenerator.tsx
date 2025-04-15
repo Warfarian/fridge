@@ -226,9 +226,11 @@ export default function RecipeGenerator() {
                 className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400 transition-colors"
               >
                 <option value="vegetarian">Vegetarian</option>
+                <option value="non vegetarian">Non Vegetarian</option>
                 <option value="vegan">Vegan</option>
                 <option value="gluten-free">Gluten-free</option>
                 <option value="dairy-free">Dairy-free</option>
+                <option value="none">None</option>
               </select>
             </div>
 
